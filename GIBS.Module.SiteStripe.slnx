@@ -1,0 +1,9 @@
+<Solution>
+  <Project Path="..\oqtane.framework\Oqtane.Server\Oqtane.Server.csproj" DefaultStartup="true">
+    <Build Solution="Debug|*" Project="false" />
+  </Project>
+  <Project Path="Client\GIBS.Module.SiteStripe.Client.csproj" />
+  <Project Path="Server\GIBS.Module.SiteStripe.Server.csproj" />
+  <Project Path="Shared\GIBS.Module.SiteStripe.Shared.csproj" />
+  <Project Path="Package\GIBS.Module.SiteStripe.Package.csproj" />
+</Solution>

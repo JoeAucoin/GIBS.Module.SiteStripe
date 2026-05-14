@@ -1,0 +1,79 @@
+@using GIBS.Module.SiteStripe.Services
+@using GIBS.Module.SiteStripe.Models
+
+@namespace GIBS.Module.SiteStripe
+@inherits ModuleBase
+@inject ISiteStripeService ClientSiteStripeService
+@inject NavigationManager NavigationManager
+@inject IStringLocalizer<Index> Localizer
+
+@if (_SiteStripes == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <ActionLink Action="Add" Security="SecurityAccessLevel.Edit" Text="Add SiteStripe" ResourceKey="Add" />
+    <br />
+    <br />
+    @if (@_SiteStripes.Count != 0)
+    {
+        <Pager Items="@_SiteStripes">
+            <Header>
+                <th style="width: 1px;">&nbsp;</th>
+                <th style="width: 1px;">&nbsp;</th>
+                <th>@Localizer["Name"]</th>
+            </Header>
+            <Row>
+                <td><ActionLink Action="Edit" Parameters="@($"id=" + context.SiteStripeId.ToString())" ResourceKey="Edit"  /></td>
+                <td><ActionDialog Header="Delete SiteStripe" Message="Are You Sure You Wish To Delete This SiteStripe?" Action="Delete" Security="SecurityAccessLevel.Edit" Class="btn btn-danger" OnClick="@(async () => await Delete(context))" ResourceKey="Delete"  Id="@context.SiteStripeId.ToString()" /></td>
+                <td>@context.Name</td>
+            </Row>
+        </Pager>
+    }
+    else
+    {
+        <p>@Localizer["Message.DisplayNone"]</p>
+    }
+}
+
+@code {
+    public override string RenderMode => RenderModes.Static;
+
+    public override List<Resource> Resources => new List<Resource>()
+    {
+        new Stylesheet("_content/GIBS.Module.SiteStripe/Module.css"),
+        new Script("_content/GIBS.Module.SiteStripe/Module.js")
+    };
+
+    List<SiteStripe> _SiteStripes;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _SiteStripes = await ClientSiteStripeService.GetSiteStripesAsync(ModuleState.ModuleId);
+        }
+        catch (Exception ex)
+        {
+            await logger.LogError(ex, "Error Loading SiteStripe {Error}", ex.Message);
+            AddModuleMessage(Localizer["Message.LoadError"], MessageType.Error);
+        }
+    }
+
+    private async Task Delete(SiteStripe SiteStripe)
+    {
+        try
+        {
+            await ClientSiteStripeService.DeleteSiteStripeAsync(SiteStripe.SiteStripeId, ModuleState.ModuleId);
+            await logger.LogInformation("SiteStripe Deleted {SiteStripe}", SiteStripe);
+            _SiteStripes = await ClientSiteStripeService.GetSiteStripesAsync(ModuleState.ModuleId);
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            await logger.LogError(ex, "Error Deleting SiteStripe {SiteStripe} {Error}", SiteStripe, ex.Message);
+            AddModuleMessage(Localizer["Message.DeleteError"], MessageType.Error);
+        }
+    }
+}
