@@ -10,6 +10,7 @@ namespace GIBS.Module.SiteStripe.Repository
     public class SiteStripeContext : DBContextBase, ITransientService, IMultiDatabase
     {
         public virtual DbSet<Models.SiteStripe> SiteStripe { get; set; }
+        public virtual DbSet<Models.Category> Category { get; set; }
 
         public SiteStripeContext(IDBContextDependencies DBContextDependencies) : base(DBContextDependencies)
         {
@@ -20,7 +21,8 @@ namespace GIBS.Module.SiteStripe.Repository
         {
             base.OnModelCreating(builder);
 
-            builder.Entity<Models.SiteStripe>().ToTable(ActiveDatabase.RewriteName("GIBSSiteStripe"));
+            builder.Entity<Models.SiteStripe>().ToTable(ActiveDatabase.RewriteName("GIBS_SiteStripe"));
+            builder.Entity<Models.Category>().ToTable(ActiveDatabase.RewriteName("GIBS_SiteStripe_Category"));
         }
     }
 }

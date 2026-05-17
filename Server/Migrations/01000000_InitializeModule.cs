@@ -19,12 +19,18 @@ namespace GIBS.Module.SiteStripe.Migrations
         {
             var entityBuilder = new SiteStripeEntityBuilder(migrationBuilder, ActiveDatabase);
             entityBuilder.Create();
+
+            var categoryEntityBuilder = new CategoryEntityBuilder(migrationBuilder, ActiveDatabase);
+            categoryEntityBuilder.Create();
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             var entityBuilder = new SiteStripeEntityBuilder(migrationBuilder, ActiveDatabase);
             entityBuilder.Drop();
+
+            var categoryEntityBuilder = new CategoryEntityBuilder(migrationBuilder, ActiveDatabase);
+            categoryEntityBuilder.Drop();
         }
     }
 }

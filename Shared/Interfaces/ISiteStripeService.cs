@@ -7,6 +7,8 @@ namespace GIBS.Module.SiteStripe.Services
     {
         Task<List<Models.SiteStripe>> GetSiteStripesAsync(int ModuleId);
 
+        Task<List<Models.SiteStripe>> GetSiteStripesBySiteIdAsync(int SiteId);
+
         Task<Models.SiteStripe> GetSiteStripeAsync(int SiteStripeId, int ModuleId);
 
         Task<Models.SiteStripe> AddSiteStripeAsync(Models.SiteStripe SiteStripe);

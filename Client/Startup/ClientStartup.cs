@@ -13,6 +13,10 @@ namespace GIBS.Module.SiteStripe.Startup
             {
                 services.AddScoped<ISiteStripeService, ClientSiteStripeService>();
             }
+            if (!services.Any(s => s.ServiceType == typeof(ICategoryService)))
+            {
+                services.AddScoped<ICategoryService, ClientCategoryService>();
+            }
         }
     }
 }

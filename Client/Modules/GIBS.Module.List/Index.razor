@@ -1,0 +1,248 @@
+@using GIBS.Module.SiteStripe.Services
+@using GIBS.Module.SiteStripe.Models
+
+
+@namespace GIBS.Module.SiteStripe.List
+@inherits ModuleBase
+@inject ISiteStripeService ClientSiteStripeService
+@inject NavigationManager NavigationManager
+@inject IStringLocalizer<Index> Localizer
+@inject ISettingService SettingService
+
+@if (_SiteStripes == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    var displayTemplate = _displayTemplate?.Trim() ?? string.Empty;
+
+    @if (FilteredSiteStripes.Count != 0)
+    {
+        if (string.Equals(displayTemplate, "TextOnly", StringComparison.OrdinalIgnoreCase))
+        {
+            <div class="list-group">
+                @foreach (var siteStripe in PagedSiteStripes)
+                {
+                    <div class="list-group-item d-flex justify-content-between align-items-center gap-3">
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold">@siteStripe.Name</div>
+                            <div class="text-muted small">@(string.IsNullOrWhiteSpace(siteStripe.CategoryName) ? siteStripe.ProductCategory : siteStripe.CategoryName)</div>
+                        </div>
+                        <a href="@siteStripe.AffiliateURL"
+                           target="@(siteStripe.OpenInNewTab ? "_blank" : "_self")"
+                           rel="@siteStripe.RelAttribute" title="@siteStripe.Name"
+                           class="btn btn-outline-primary btn-sm text-nowrap"><i class="bi bi-amazon"></i> Buy on Amazon</a>
+                    </div>
+                }
+            </div>
+        }
+        else if (string.Equals(displayTemplate, "SmallCard", StringComparison.OrdinalIgnoreCase))
+        {
+            <div class="row g-3">
+                @foreach (var siteStripe in PagedSiteStripes)
+                {
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                        <div class="card h-100 site-stripe-small-card">
+                            @if (!string.IsNullOrWhiteSpace(siteStripe.ImageURL))
+                            {
+                                <img src="@siteStripe.ImageURL" alt="@siteStripe.Name" class="card-img-top site-stripe-small-card-image" />
+                            }
+                            <div class="card-body d-flex flex-column">
+                                <h6 class="card-title mb-1">@siteStripe.Name</h6>
+                                <p class="card-text text-muted small mb-3">@(string.IsNullOrWhiteSpace(siteStripe.CategoryName) ? siteStripe.ProductCategory : siteStripe.CategoryName)</p>
+                                <a href="@siteStripe.AffiliateURL"
+                                target="@(siteStripe.OpenInNewTab ? "_blank" : "_self")"
+                                rel="@siteStripe.RelAttribute"
+                                class="btn btn-outline-primary btn-lg mt-auto"><i class="bi bi-amazon"></i> Buy on Amazon</a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else if (string.Equals(displayTemplate, "Showcase", StringComparison.OrdinalIgnoreCase))
+        {
+            <div class="row g-3">
+                @foreach (var siteStripe in PagedSiteStripes)
+                {
+                    <div class="col-12">
+                        <div class="card h-100 site-stripe-showcase-card">
+                            <div class="row g-0">
+                                @if (!string.IsNullOrWhiteSpace(siteStripe.ImageURL))
+                                {
+                                    <div class="col-md-4">
+                                        <img src="@siteStripe.ImageURL" alt="@siteStripe.Name" class="img-fluid rounded-start site-stripe-showcase-image" />
+                                    </div>
+                                }
+                                <div class="col-md-8">
+                                    <div class="card-body d-flex flex-column h-100">
+                                        <h5 class="card-title mb-1">@siteStripe.Name</h5>
+                                        <p class="card-text text-muted small mb-3">@(string.IsNullOrWhiteSpace(siteStripe.CategoryName) ? siteStripe.ProductCategory : siteStripe.CategoryName)</p>
+                                        <div  class="mb-3">@((MarkupString)siteStripe.RawHTMLEmbed)</div>
+                                        <a href="@siteStripe.AffiliateURL"
+                                           target="@(siteStripe.OpenInNewTab ? "_blank" : "_self")"
+                                           rel="@siteStripe.RelAttribute"
+                                           class="btn btn-outline-primary btn-lg mt-auto"><i class="bi bi-amazon"></i> Buy on Amazon</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else if (string.Equals(displayTemplate, "Carousel", StringComparison.OrdinalIgnoreCase))
+        {
+            <div id="gibsCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
+                <div class="carousel-inner" role="listbox">
+                    @for (int i = 0; i < FilteredSiteStripes.Count(); i++)
+                    {
+                        var siteStripe = FilteredSiteStripes.ElementAt(i);
+                        var loadingMode = i < 6 ? "eager" : "lazy";
+                        <div class="carousel-item @(i == 0 ? "active" : "")">
+                            <div class="carousel-item-image-wrapper">
+                                @if (!string.IsNullOrWhiteSpace(siteStripe.ImageURL))
+                                {
+                                    <a href="@siteStripe.AffiliateURL"
+                                       target="@(siteStripe.OpenInNewTab ? "_blank" : "_self")"
+                                       rel="@siteStripe.RelAttribute"
+                                       class="carousel-image-link">
+                                        <div class="d-flex justify-content-center align-items-center">
+                                            <img src="@siteStripe.ImageURL" class="carousel-image"
+                                                 alt="@siteStripe.Name" 
+                                                 style="max-height:@(_imageHeight);" 
+                                                 loading="@loadingMode" decoding="async" />
+                                        </div>
+                                        <div class="carousel-info-overlay">
+                                            <div class="carousel-info-title">@siteStripe.SmallName</div>
+                                         
+                                        </div>
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+                <a class="carousel-control-prev carousel-control-btn" href="#gibsCarousel" role="button" data-bs-slide="prev" aria-label="Previous slide">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+                <a class="carousel-control-next carousel-control-btn" href="#gibsCarousel" role="button" data-bs-slide="next" aria-label="Next slide">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            </div>
+        }
+
+        @if (TotalPages > 1 && !string.Equals(displayTemplate, "Carousel", StringComparison.OrdinalIgnoreCase))
+        {
+            <nav class="mt-3" aria-label="SiteStripe pagination">
+                <ul class="pagination pagination-sm justify-content-center">
+                    <li class="page-item @(_currentPage == 1 ? "disabled" : "")">
+                        @if (_currentPage > 1)
+                        {
+                            <a href="@GetPageUrl(_currentPage - 1)" class="page-link">Previous</a>
+                        }
+                        else
+                        {
+                            <span class="page-link">Previous</span>
+                        }
+                    </li>
+                    @for (var pageNumber = 1; pageNumber <= TotalPages; pageNumber++)
+                    {
+                        <li class="page-item @(pageNumber == _currentPage ? "active" : "")" aria-current="@(pageNumber == _currentPage ? "page" : null)">
+                            @if (pageNumber == _currentPage)
+                            {
+                                <span class="page-link">@pageNumber</span>
+                            }
+                            else
+                            {
+                                <a href="@GetPageUrl(pageNumber)" class="page-link">@pageNumber</a>
+                            }
+                        </li>
+                    }
+                    <li class="page-item @(_currentPage == TotalPages ? "disabled" : "")">
+                        @if (_currentPage < TotalPages)
+                        {
+                            <a href="@GetPageUrl(_currentPage + 1)" class="page-link">Next</a>
+                        }
+                        else
+                        {
+                            <span class="page-link">Next</span>
+                        }
+                    </li>
+                </ul>
+            </nav>
+        }
+    }
+    else
+    {
+        <p>@Localizer["Message.DisplayNone"]</p>
+    }
+}
+
+@code {
+    public override string RenderMode => RenderModes.Static;
+
+    public override List<Resource> Resources => new List<Resource>()
+    {
+        new Stylesheet("_content/GIBS.Module.SiteStripe/Module.css?v=7"),
+        new Script("_content/GIBS.Module.SiteStripe/Module.js?v=7")
+    };
+
+    private int _pageSize = 10;
+
+    List<SiteStripe> _SiteStripes;
+    private int _currentPage = 1;
+    private string _displayTemplate;
+    private string _imageHeight;
+    private int _numberVisible = 5;
+
+    private List<SiteStripe> FilteredSiteStripes => _SiteStripes?
+        .Where(item => item.IsActive)
+        .ToList() ?? new List<SiteStripe>();
+
+    private IEnumerable<SiteStripe> PagedSiteStripes => FilteredSiteStripes
+        .Skip((_currentPage - 1) * _pageSize)
+        .Take(_pageSize);
+
+    private int TotalPages => (int)Math.Ceiling((double)FilteredSiteStripes.Count / _pageSize);
+
+    protected override async Task OnInitializedAsync()
+       {
+           try
+           {
+               string pageSizeStr = SettingService.GetSetting(ModuleState.Settings, "PageSize", "8");
+               if (int.TryParse(pageSizeStr, out int pageSize))
+               {
+                   _pageSize = pageSize;
+               }
+               _displayTemplate = SettingService.GetSetting(ModuleState.Settings, "DisplayTemplate", "SmallCard");
+               _imageHeight = SettingService.GetSetting(ModuleState.Settings, "ImageHeight", "300px");
+            _numberVisible = int.TryParse(SettingService.GetSetting(ModuleState.Settings, "NumberVisible", "5"), out int numberVisible) ? numberVisible : 5;
+
+               _SiteStripes = await ClientSiteStripeService.GetSiteStripesBySiteIdAsync(ModuleState.SiteId);
+
+               // Get page number from query parameters
+               var uri = NavigationManager.Uri;
+               var queryIndex = uri.IndexOf("?page=");
+               if (queryIndex >= 0 && int.TryParse(uri.Substring(queryIndex + 6).Split('&')[0], out int page))
+               {
+                   _currentPage = page > 0 ? page : 1;
+               }
+               else
+               {
+                   _currentPage = 1;
+               }
+           }
+           catch (Exception ex)
+           {
+               await logger.LogError(ex, "Error Loading SiteStripe {Error}", ex.Message);
+               AddModuleMessage(Localizer["Message.LoadError"], MessageType.Error);
+           }
+       }
+
+    private string GetPageUrl(int page)
+    {
+        return NavigationManager.GetUriWithQueryParameter("page", page);
+    }
+}

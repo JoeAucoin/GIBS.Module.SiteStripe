@@ -22,6 +22,7 @@ namespace GIBS.Module.SiteStripe.Startup
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddTransient<ISiteStripeService, ServerSiteStripeService>();
+            services.AddTransient<ICategoryService, ServerCategoryService>();
             services.AddDbContextFactory<SiteStripeContext>(opt => { }, ServiceLifetime.Transient);
         }
     }

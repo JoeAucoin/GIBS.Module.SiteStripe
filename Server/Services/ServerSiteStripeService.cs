@@ -41,6 +41,20 @@ namespace GIBS.Module.SiteStripe.Services
             }
         }
 
+        public Task<List<Models.SiteStripe>> GetSiteStripesBySiteIdAsync(int SiteId)
+        {
+            if (SiteId == _alias.SiteId || _accessor.HttpContext.User.IsInRole(RoleNames.Host))
+            {
+                return Task.FromResult(_SiteStripeRepository.GetSiteStripesBySiteId(SiteId).ToList());
+            }
+            else
+            {
+                _logger.Log(LogLevel.Error, this, LogFunction.Security, "Unauthorized SiteStripe Get Attempt {SiteId}", SiteId);
+                return null;
+            }
+        }
+
+
         public Task<Models.SiteStripe> GetSiteStripeAsync(int SiteStripeId, int ModuleId)
         {
             if (_userPermissions.IsAuthorized(_accessor.HttpContext.User, _alias.SiteId, EntityNames.Module, ModuleId, PermissionNames.View))

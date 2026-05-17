@@ -40,6 +40,23 @@ namespace GIBS.Module.SiteStripe.Controllers
             }
         }
 
+        // GET api/<controller>/site/5
+        [HttpGet("site/{siteid}")]
+        [Authorize(Policy = PolicyNames.ViewModule)]
+        public async Task<IEnumerable<Models.SiteStripe>> GetBySiteId(int siteid)
+        {
+            if (IsAuthorizedEntityId(EntityNames.Site, siteid))
+            {
+                return await _SiteStripeService.GetSiteStripesBySiteIdAsync(siteid);
+            }
+            else
+            {
+                _logger.Log(LogLevel.Error, this, LogFunction.Security, "Unauthorized SiteStripe Get Attempt {SiteId}", siteid);
+                HttpContext.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+                return null;
+            }
+        }
+
         // GET api/<controller>/5
         [HttpGet("{id}/{moduleid}")]
         [Authorize(Policy = PolicyNames.ViewModule)]

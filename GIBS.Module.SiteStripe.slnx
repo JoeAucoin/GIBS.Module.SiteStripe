@@ -1,9 +1,61 @@
 <Solution>
-  <Project Path="..\oqtane.framework\Oqtane.Server\Oqtane.Server.csproj" DefaultStartup="true">
-    <Build Solution="Debug|*" Project="false" />
-  </Project>
+  <Folder Name="/_Oqtane/">
+    <Project Path="../oqtane.framework/Oqtane.Client/" Type="Website" DisplayName="Oqtane.Client">
+      <BuildType Project="Debug" />
+      <Build Project="false" />
+      <Properties Name="WebsiteProperties">
+        <Property Name="Debug.AspNetCompiler.Debug" Value="&quot;True&quot;" />
+        <Property Name="Debug.AspNetCompiler.FixedNames" Value="&quot;false&quot;" />
+        <Property Name="Debug.AspNetCompiler.ForceOverwrite" Value="&quot;true&quot;" />
+        <Property Name="Debug.AspNetCompiler.PhysicalPath" Value="&quot;..\oqtane.framework\Oqtane.Client\&quot;" />
+        <Property Name="Debug.AspNetCompiler.TargetPath" Value="&quot;PrecompiledWeb\localhost_65056\&quot;" />
+        <Property Name="Debug.AspNetCompiler.Updateable" Value="&quot;true&quot;" />
+        <Property Name="Debug.AspNetCompiler.VirtualPath" Value="&quot;/localhost_65056&quot;" />
+        <Property Name="Release.AspNetCompiler.Debug" Value="&quot;False&quot;" />
+        <Property Name="Release.AspNetCompiler.FixedNames" Value="&quot;false&quot;" />
+        <Property Name="Release.AspNetCompiler.ForceOverwrite" Value="&quot;true&quot;" />
+        <Property Name="Release.AspNetCompiler.PhysicalPath" Value="&quot;..\oqtane.framework\Oqtane.Client\&quot;" />
+        <Property Name="Release.AspNetCompiler.TargetPath" Value="&quot;PrecompiledWeb\localhost_65056\&quot;" />
+        <Property Name="Release.AspNetCompiler.Updateable" Value="&quot;true&quot;" />
+        <Property Name="Release.AspNetCompiler.VirtualPath" Value="&quot;/localhost_65056&quot;" />
+        <Property Name="VWDPort" Value="&quot;65056&quot;" />
+      </Properties>
+    </Project>
+    <Project Path="../oqtane.framework/Oqtane.Shared/Oqtane.Shared.csproj">
+      <Build Project="false" />
+    </Project>
+    <Project Path="..\oqtane.framework\Oqtane.Server\Oqtane.Server.csproj">
+      <Build Project="false" />
+    </Project>
+  </Folder>
+  <Folder Name="/docs/governance/">
+    <File Path="../oqtane-ai-playbook/module-playbook-example/docs/governance/027-rules-index.md" />
+    <File Path="../oqtane-ai-playbook/module-playbook-example/docs/governance/027x-ai-decision-timeline.md" />
+    <File Path="../oqtane-ai-playbook/module-playbook-example/docs/governance/027x-ai-instruction-discovery.md" />
+    <File Path="../oqtane-ai-playbook/module-playbook-example/docs/governance/027x-authorization.md" />
+    <File Path="../oqtane-ai-playbook/module-playbook-example/docs/governance/027x-canonical-framework.md" />
+    <File Path="../oqtane-ai-playbook/module-playbook-example/docs/governance/027x-canonical-validation.md" />
+    <File Path="../oqtane-ai-playbook/module-playbook-example/docs/governance/027x-core-ai-behavior.md" />
+    <File Path="../oqtane-ai-playbook/module-playbook-example/docs/governance/027x-error-handling.md" />
+    <File Path="../oqtane-ai-playbook/module-playbook-example/docs/governance/027x-localization.md" />
+    <File Path="../oqtane-ai-playbook/module-playbook-example/docs/governance/027x-migrations.md" />
+    <File Path="../oqtane-ai-playbook/module-playbook-example/docs/governance/027x-packaging-and-dependencies.md" />
+    <File Path="../oqtane-ai-playbook/module-playbook-example/docs/governance/027x-repositories.md" />
+    <File Path="../oqtane-ai-playbook/module-playbook-example/docs/governance/027x-scheduled-jobs.md" />
+    <File Path="../oqtane-ai-playbook/module-playbook-example/docs/governance/027x-startup.md" />
+    <File Path="../oqtane-ai-playbook/module-playbook-example/docs/governance/027x-structure-and-boundaries.md" />
+    <File Path="../oqtane-ai-playbook/module-playbook-example/docs/governance/027x-ui-construction.md" />
+    <File Path="../oqtane-ai-playbook/module-playbook-example/docs/governance/027x-ui-mudblazor.md" />
+    <File Path="../oqtane-ai-playbook/module-playbook-example/docs/governance/027x-ui-Radzen.md" />
+    <File Path="../oqtane-ai-playbook/module-playbook-example/docs/governance/027x-ui-validation.md" />
+    <File Path="../oqtane-ai-playbook/module-playbook-example/docs/governance/README.md" />
+  </Folder>
+  <Folder Name="/docs/">
+    <File Path="docs/deviations.md" />
+    <File Path="docs/ai-decision-timeline.md" />
+  </Folder>
   <Project Path="Client\GIBS.Module.SiteStripe.Client.csproj" />
+  <Project Path="Package\GIBS.Module.SiteStripe.Package.csproj" />
   <Project Path="Server\GIBS.Module.SiteStripe.Server.csproj" />
   <Project Path="Shared\GIBS.Module.SiteStripe.Shared.csproj" />
-  <Project Path="Package\GIBS.Module.SiteStripe.Package.csproj" />
 </Solution>

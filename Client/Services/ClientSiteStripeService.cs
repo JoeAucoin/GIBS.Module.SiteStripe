@@ -20,6 +20,13 @@ namespace GIBS.Module.SiteStripe.Services
             return SiteStripes.OrderBy(item => item.Name).ToList();
         }
 
+        public async Task<List<Models.SiteStripe>> GetSiteStripesBySiteIdAsync(int SiteId)
+        {
+            List<Models.SiteStripe> SiteStripes = await GetJsonAsync<List<Models.SiteStripe>>(CreateAuthorizationPolicyUrl($"{Apiurl}/site/{SiteId}", EntityNames.Site, SiteId), Enumerable.Empty<Models.SiteStripe>().ToList());
+            return SiteStripes.OrderBy(item => item.Name).ToList();
+        }
+
+
         public async Task<Models.SiteStripe> GetSiteStripeAsync(int SiteStripeId, int ModuleId)
         {
             return await GetJsonAsync<Models.SiteStripe>(CreateAuthorizationPolicyUrl($"{Apiurl}/{SiteStripeId}/{ModuleId}", EntityNames.Module, ModuleId));

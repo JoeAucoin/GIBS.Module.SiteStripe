@@ -54,9 +54,24 @@ namespace GIBS.Module.SiteStripe.Manager
             }
             if (SiteStripes != null)
             {
-                foreach(var SiteStripe in SiteStripes)
+                foreach (var SiteStripe in SiteStripes)
                 {
-                    _SiteStripeRepository.AddSiteStripe(new Models.SiteStripe { ModuleId = module.ModuleId, Name = SiteStripe.Name });
+                    _SiteStripeRepository.AddSiteStripe(new Models.SiteStripe
+                    {
+                        ModuleId = module.ModuleId,
+                        Name = SiteStripe.Name,
+                        ASIN = SiteStripe.ASIN,
+                        AffiliateURL = SiteStripe.AffiliateURL,
+                        ImageURL = SiteStripe.ImageURL,
+                        PricePoint = SiteStripe.PricePoint,
+                        ProductCategory = SiteStripe.ProductCategory,
+                        IsPrimeEligible = SiteStripe.IsPrimeEligible,
+                        IsActive = SiteStripe.IsActive,
+                        DisplayTemplate = SiteStripe.DisplayTemplate,
+                        OpenInNewTab = SiteStripe.OpenInNewTab,
+                        RelAttribute = SiteStripe.RelAttribute,
+                        RawHTMLEmbed = SiteStripe.RawHTMLEmbed
+                    });
                 }
             }
         }
@@ -71,10 +86,10 @@ namespace GIBS.Module.SiteStripe.Manager
                {
                    searchContentList.Add(new SearchContent
                    {
-                       EntityName = "GIBSSiteStripe",
+                       EntityName = "GIBS_SiteStripe",
                        EntityId = SiteStripe.SiteStripeId.ToString(),
                        Title = SiteStripe.Name,
-                       Body = SiteStripe.Name,
+                       Body = $"{SiteStripe.Name} {SiteStripe.ASIN} {SiteStripe.ProductCategory}",
                        ContentModifiedBy = SiteStripe.ModifiedBy,
                        ContentModifiedOn = SiteStripe.ModifiedOn
                    });

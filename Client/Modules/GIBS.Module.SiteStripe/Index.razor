@@ -12,47 +12,94 @@
     <p><em>Loading...</em></p>
 }
 else
-{
-    <ActionLink Action="Add" Security="SecurityAccessLevel.Edit" Text="Add SiteStripe" ResourceKey="Add" />
+{ 
+<div class="text-end"><ActionLink Action="Add" Security="SecurityAccessLevel.Edit" Text="Manage Records" ResourceKey="Add" />
+<ActionLink Action="ManageCategory" Security="SecurityAccessLevel.Edit" Text="Manage Category" ResourceKey="Category" />
+    </div>
     <br />
     <br />
-    @if (@_SiteStripes.Count != 0)
+
+    @if (FilteredSiteStripes.Count != 0)
     {
-        <Pager Items="@_SiteStripes">
-            <Header>
-                <th style="width: 1px;">&nbsp;</th>
-                <th style="width: 1px;">&nbsp;</th>
-                <th>@Localizer["Name"]</th>
-            </Header>
-            <Row>
-                <td><ActionLink Action="Edit" Parameters="@($"id=" + context.SiteStripeId.ToString())" ResourceKey="Edit"  /></td>
-                <td><ActionDialog Header="Delete SiteStripe" Message="Are You Sure You Wish To Delete This SiteStripe?" Action="Delete" Security="SecurityAccessLevel.Edit" Class="btn btn-danger" OnClick="@(async () => await Delete(context))" ResourceKey="Delete"  Id="@context.SiteStripeId.ToString()" /></td>
-                <td>@context.Name</td>
-            </Row>
-        </Pager>
+        <div class="row g-3">
+            @foreach (var siteStripe in PagedSiteStripes)
+            {
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                    <div class="card h-100 site-stripe-small-card">
+                        @if (!string.IsNullOrWhiteSpace(siteStripe.ImageURL))
+                        {
+                            <img src="@siteStripe.ImageURL" alt="@siteStripe.Name" class="card-img-top site-stripe-small-card-image" />
+                        }
+                        <div class="card-body d-flex flex-column">
+                            <h6 class="card-title mb-1">@siteStripe.Name</h6>
+                            <p class="card-text text-muted small mb-3">@(string.IsNullOrWhiteSpace(siteStripe.CategoryName) ? siteStripe.ProductCategory : siteStripe.CategoryName)</p>
+                            <a href="@siteStripe.AffiliateURL"
+                               target="@(siteStripe.OpenInNewTab ? "_blank" : "_self")"
+                               rel="@siteStripe.RelAttribute"
+                               class="btn btn-outline-primary btn-lg mt-auto"><i class="bi bi-amazon"></i> Buy on Amazon</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+  
+
+        @if (TotalPages > 1)
+        {
+            <nav class="mt-3" aria-label="SiteStripe pagination">
+                <ul class="pagination pagination-sm justify-content-center">
+                    <li class="page-item @(_currentPage == 1 ? "disabled" : "")">
+                        <button type="button" class="page-link" @onclick="() => ChangePage(_currentPage - 1)">Previous</button>
+                    </li>
+                    @for (var pageNumber = 1; pageNumber <= TotalPages; pageNumber++)
+                    {
+                        <li class="page-item @(pageNumber == _currentPage ? "active" : "")" aria-current="@(pageNumber == _currentPage ? "page" : null)">
+                            <button type="button" class="page-link" @onclick="() => ChangePage(pageNumber)">@pageNumber</button>
+                        </li>
+                    }
+                    <li class="page-item @(_currentPage == TotalPages ? "disabled" : "")">
+                        <button type="button" class="page-link" @onclick="() => ChangePage(_currentPage + 1)">Next</button>
+                    </li>
+                </ul>
+            </nav>
+        }
     }
     else
     {
         <p>@Localizer["Message.DisplayNone"]</p>
     }
-}
+} 
 
 @code {
     public override string RenderMode => RenderModes.Static;
 
     public override List<Resource> Resources => new List<Resource>()
     {
-        new Stylesheet("_content/GIBS.Module.SiteStripe/Module.css"),
+        new Stylesheet("_content/GIBS.Module.SiteStripe/Module.css?v=3"),
         new Script("_content/GIBS.Module.SiteStripe/Module.js")
     };
 
+    private const int PageSize = 10;
+
     List<SiteStripe> _SiteStripes;
+    private int _currentPage = 1;
+
+    private List<SiteStripe> FilteredSiteStripes => _SiteStripes?
+        .Where(item => item.IsActive && string.Equals(item.DisplayTemplate, "SmallCard", StringComparison.OrdinalIgnoreCase))
+        .ToList() ?? new List<SiteStripe>();
+
+    private IEnumerable<SiteStripe> PagedSiteStripes => FilteredSiteStripes
+        .Skip((_currentPage - 1) * PageSize)
+        .Take(PageSize);
+
+    private int TotalPages => (int)Math.Ceiling((double)FilteredSiteStripes.Count / PageSize);
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
             _SiteStripes = await ClientSiteStripeService.GetSiteStripesAsync(ModuleState.ModuleId);
+            _currentPage = 1;
         }
         catch (Exception ex)
         {
@@ -61,19 +108,14 @@ else
         }
     }
 
-    private async Task Delete(SiteStripe SiteStripe)
+    private async Task ChangePage(int page)
     {
-        try
+        if (page < 1 || page > TotalPages)
         {
-            await ClientSiteStripeService.DeleteSiteStripeAsync(SiteStripe.SiteStripeId, ModuleState.ModuleId);
-            await logger.LogInformation("SiteStripe Deleted {SiteStripe}", SiteStripe);
-            _SiteStripes = await ClientSiteStripeService.GetSiteStripesAsync(ModuleState.ModuleId);
-            StateHasChanged();
+            return;
         }
-        catch (Exception ex)
-        {
-            await logger.LogError(ex, "Error Deleting SiteStripe {SiteStripe} {Error}", SiteStripe, ex.Message);
-            AddModuleMessage(Localizer["Message.DeleteError"], MessageType.Error);
-        }
+
+        _currentPage = page;
+        await InvokeAsync(StateHasChanged);
     }
 }

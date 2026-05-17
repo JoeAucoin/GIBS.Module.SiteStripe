@@ -1,68 +1,286 @@
 @using Oqtane.Modules.Controls
 @using GIBS.Module.SiteStripe.Services
 @using GIBS.Module.SiteStripe.Models
+@using Oqtane.UI
+@using Oqtane.Shared
+@using Oqtane.Enums
+@using System.ComponentModel.DataAnnotations
+@using System.Linq
+@using System.Globalization
+@using Oqtane.Modules.HtmlText.Services
 
 @namespace GIBS.Module.SiteStripe
 @inherits ModuleBase
 @inject ISiteStripeService ClientSiteStripeService
+@inject ICategoryService ClientCategoryService
 @inject NavigationManager NavigationManager
 @inject IStringLocalizer<Edit> Localizer
+@inject IHtmlTextService HtmlTextService
 
 <form @ref="form" class="@(validated ? " was-validated" : "needs-validation" )" novalidate>
     <div class="container">
         <div class="row mb-1 align-items-center">
-            <Label Class="col-sm-3" For="name" HelpText="Enter a name" ResourceKey="Name">Name: </Label>
+            <Label Class="col-sm-3" For="name" HelpText="Enter product name" ResourceKey="Name">Name: </Label>
             <div class="col-sm-9">
-                <input id="name" class="form-control" @bind="@_name" required />
+                <input id="name" type="text" class="form-control" @bind="_name" required />
+            </div>
+        </div>
+
+        <div class="row mb-1 align-items-center">
+            <label class="col-sm-3 col-form-label" for="asin">ASIN:</label>
+            <div class="col-sm-9">
+                <input id="asin" type="text" class="form-control" @bind="_asin" required />
+            </div>
+        </div>
+
+        <div class="row mb-1 align-items-center">
+            <label class="col-sm-3 col-form-label" for="affiliateurl">Affiliate URL:</label>
+            <div class="col-sm-9">
+                <input id="affiliateurl" type="url" class="form-control" @bind="_affiliateUrl" required />
+            </div>
+        </div>
+
+        <div class="row mb-1 align-items-center">
+            <label class="col-sm-3 col-form-label" for="imageurl">Image URL:</label>
+            <div class="col-sm-9">
+                <input id="imageurl" type="url" class="form-control" @bind="_imageUrl" />
+            </div>
+        </div>
+
+        <div class="row mb-1 align-items-center">
+            <label class="col-sm-3 col-form-label" for="videourl">Video URL:</label>
+            <div class="col-sm-9">
+                <input id="videourl" type="url" class="form-control" @bind="_videoUrl" />
+            </div>
+        </div>
+
+        <div class="row mb-1 align-items-center">
+            <label class="col-sm-3 col-form-label" for="pricepoint">Price Point:</label>
+            <div class="col-sm-9">
+                <input id="pricepoint" type="number" step="0.01" class="form-control" @bind="_pricePoint" />
+            </div>
+        </div>
+
+        <div class="row mb-1 align-items-center">
+            <Label Class="col-sm-3" For="categoryid" HelpText="Select a category" ResourceKey="CategoryId">Category: </Label>
+            <div class="col-sm-9">
+                <select id="categoryid" class="form-select" @bind="_categoryId" @bind:after="OnCategoryChanged" required>
+                    <option value="">@Localizer["Category.Placeholder"]</option>
+                    <option value="-1">@Localizer["Category.NewOption"]</option>
+                    @RenderOptions(ParentItems)
+                    @* @foreach (var category in _categories)
+                    {
+                        <option value="@category.CategoryId">@category.Name</option>
+                    } *@
+                </select>
+            </div>
+        </div>
+
+        @if (_categoryId == -1)
+        {
+            <div class="row mb-1 align-items-center">
+                <Label Class="col-sm-3" For="newcategoryname" HelpText="Enter a new category name" ResourceKey="NewCategory">New Category: </Label>
+                <div class="col-sm-7">
+                    <input id="newcategoryname" class="form-control" @bind="_newCategoryName" />
+                </div>
+                <div class="col-sm-2">
+                    <button type="button" class="btn btn-outline-primary" @onclick="CreateCategory">@Localizer["Create"]</button>
+                </div>
+            </div>
+        }
+
+        <div class="row mb-1 align-items-center">
+            <label class="col-sm-3 col-form-label" for="productcategory">Product Category:</label>
+            <div class="col-sm-9">
+                <input id="productcategory" type="text" class="form-control" @bind="_productCategory" />
+            </div>
+        </div>
+
+        <div class="row mb-1 align-items-center">
+            <label class="col-sm-3 col-form-label" for="displaytemplate">Display Template:</label>
+            <div class="col-sm-9">
+                <select id="displaytemplate" class="form-select" @bind="_displayTemplate">
+                    <option value="TextOnly">TextOnly</option>
+                    <option value="SmallCard">SmallCard</option>
+                    <option value="Showcase">Showcase</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="row mb-1 align-items-center">
+            <label class="col-sm-3 col-form-label" for="relattribute">Rel Attribute:</label>
+            <div class="col-sm-9">
+                <input id="relattribute" type="text" class="form-control" @bind="_relAttribute" />
+            </div>
+        </div>
+
+        <div class="row mb-1 align-items-center">
+            <label class="col-sm-3 col-form-label" for="rawhtmlembed">Raw HTML Embed:</label>
+            <div class="col-sm-9">
+                
+                <RichTextEditor id="htmlContent" @key="_editorKey" Content="@_rawHtmlEmbed" @bind="@_rawHtmlEmbed" @ref="@RichTextEditorHtml"></RichTextEditor>
+            </div>
+        </div>
+
+        <div class="row mb-1 align-items-center">
+            <div class="col-sm-3">Flags:</div>
+            <div class="col-sm-9 d-flex flex-wrap gap-3">
+                <div class="form-check">
+                    <input id="isprimeeligible" type="checkbox" class="form-check-input" @bind="_isPrimeEligible" />
+                    <label class="form-check-label" for="isprimeeligible">Prime Eligible</label>
+                </div>
+                <div class="form-check">
+                    <input id="isactive" type="checkbox" class="form-check-input" @bind="_isActive" />
+                    <label class="form-check-label" for="isactive">Active</label>
+                </div>
+                <div class="form-check">
+                    <input id="openinnewtab" type="checkbox" class="form-check-input" @bind="_openInNewTab" />
+                    <label class="form-check-label" for="openinnewtab">Open In New Tab</label>
+                </div>
             </div>
         </div>
     </div>
     <button type="button" class="btn btn-success" @onclick="Save">@Localizer["Save"]</button>
     <NavLink class="btn btn-secondary" href="@NavigateUrl()">@Localizer["Cancel"]</NavLink>
+    <ActionLink Action="ManageCategory" Security="SecurityAccessLevel.Edit" Text="Manage Categories" ResourceKey="ManageCategory" />
     <br /><br />
-    @if (PageState.Action == "Edit")
+    @if (string.Equals(PageState?.Action, "Edit", StringComparison.OrdinalIgnoreCase))
     {
-    <AuditInfo CreatedBy="@_createdby" CreatedOn="@_createdon" ModifiedBy="@_modifiedby" ModifiedOn="@_modifiedon"></AuditInfo>
+        <AuditInfo CreatedBy="@_createdby" CreatedOn="@_createdon" ModifiedBy="@_modifiedby" ModifiedOn="@_modifiedon"></AuditInfo>
     }
 </form>
+
+@if (@_SiteStripes.Count != 0)
+{
+    <Pager Items="@_SiteStripes">
+        <Header>
+            <th style="width: 1px;">&nbsp;</th>
+            <th style="width: 1px;">&nbsp;</th>
+            <th>@Localizer["Image"]</th>
+            <th>@Localizer["Name"]</th>
+            <th>@Localizer["ASIN"]</th>
+            <th>@Localizer["Category"]</th>
+            <th>@Localizer["CategoryId"]</th>
+            <th>@Localizer["CategoryName"]</th>
+            <th>@Localizer["PricePoint"]</th>
+            <th>@Localizer["Status"]</th>
+        </Header>
+        <Row>
+            <td><ActionLink Action="Edit" Parameters="@($"id=" + context.SiteStripeId.ToString())" ResourceKey="Edit" /></td>
+            <td><ActionDialog Header="Delete Record" Message="Are You Sure You Wish To Delete This Affiliate record?" Action="Delete" Security="SecurityAccessLevel.Edit" Class="btn btn-danger" OnClick="@(async () => await Delete(context))" ResourceKey="Delete" Id="@context.SiteStripeId.ToString()" /></td>
+            <td>
+                @if (!string.IsNullOrWhiteSpace(context.ImageURL))
+                {
+                    <img src="@context.ImageURL" alt="@context.Name" style="max-width: 160px; max-height: 160px;" />
+                }
+            </td>
+            <td>@context.SmallName</td>
+           
+            <td>@context.ASIN</td>
+            <td>@context.ProductCategory</td>
+            <td>@context.CategoryId</td>
+            <td>@(string.IsNullOrWhiteSpace(context.CategoryName) ? "" : context.CategoryName)</td>
+            <td>@(context.PricePoint.HasValue ? FormatCurrency(context.PricePoint.Value) : "")</td>
+            <td>@(context.IsActive ? Localizer["Active"] : Localizer["Inactive"])</td>
+        </Row>
+    </Pager>
+}
+else
+{
+    <p>@Localizer["Message.DisplayNone"]</p>
+}
+
+
+
+
+
+
 
 @code {
     public override SecurityAccessLevel SecurityAccessLevel => SecurityAccessLevel.Edit;
 
     public override string Actions => "Add,Edit";
 
-    public override string Title => "Manage SiteStripe";
+    public override string Title => "Manage Affiliate Record";
 
     public override List<Resource> Resources => new List<Resource>()
     {
         new Stylesheet("_content/GIBS.Module.SiteStripe/Module.css")
     };
 
+    List<SiteStripe> _SiteStripes;
+
     private ElementReference form;
     private bool validated = false;
+    private RichTextEditor RichTextEditorHtml;
+    private int _editorKey;
 
     private int _id;
     private string _name;
+    private string _asin;
+    private string _affiliateUrl;
+    private string _imageUrl;
+    private string _videoUrl;
+    private decimal? _pricePoint;
+    private string _productCategory;
+    private int? _categoryId;
+    private string _newCategoryName;
+    private bool _isPrimeEligible = true;
+    private bool _isActive = true;
+    private string _displayTemplate = "SmallCard";
+    private bool _openInNewTab = true;
+    private string _relAttribute = "nofollow, sponsored";
+    private string _rawHtmlEmbed;
     private string _createdby;
     private DateTime _createdon;
     private string _modifiedby;
     private DateTime _modifiedon;
+    private int _siteId;
+    private List<Category> _categories = new();
+    private List<Category> ParentItems = new();
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            if (PageState.Action == "Edit")
+            await LoadCategories();
+            ParentItems = BuildTree(_categories);
+
+            _SiteStripes = await ClientSiteStripeService.GetSiteStripesAsync(ModuleState.ModuleId);
+            _siteId = ModuleState.SiteId;
+
+            if (string.Equals(PageState?.Action, "Edit", StringComparison.OrdinalIgnoreCase))
             {
-                _id = Int32.Parse(PageState.QueryString["id"]);
-                SiteStripe SiteStripe = await ClientSiteStripeService.GetSiteStripeAsync(_id, ModuleState.ModuleId);
-                if (SiteStripe != null)
+                if (ModuleState == null || PageState?.QueryString == null || !PageState.QueryString.TryGetValue("id", out var value) || !int.TryParse(value, out _id))
                 {
-                    _name = SiteStripe.Name;
-                    _createdby = SiteStripe.CreatedBy;
-                    _createdon = SiteStripe.CreatedOn;
-                    _modifiedby = SiteStripe.ModifiedBy;
-                    _modifiedon = SiteStripe.ModifiedOn;
+                    AddModuleMessage(Localizer["Message.LoadError"], MessageType.Error);
+                    return;
+                }
+
+                SiteStripe siteStripe = await ClientSiteStripeService.GetSiteStripeAsync(_id, ModuleState.ModuleId);
+                if (siteStripe != null)
+                {
+                    _name = siteStripe.Name;
+                    _asin = siteStripe.ASIN;
+                    _affiliateUrl = siteStripe.AffiliateURL;
+                    _imageUrl = siteStripe.ImageURL;
+                    _videoUrl = siteStripe.VideoURL;
+                    _pricePoint = siteStripe.PricePoint;
+                    _productCategory = siteStripe.ProductCategory;
+                    _categoryId = siteStripe.CategoryId > 0
+                        ? siteStripe.CategoryId
+                        : _categories.FirstOrDefault(category => string.Equals(category.Name, siteStripe.ProductCategory, StringComparison.OrdinalIgnoreCase))?.CategoryId;
+                    _isPrimeEligible = siteStripe.IsPrimeEligible;
+                    _isActive = siteStripe.IsActive;
+                    _displayTemplate = string.IsNullOrWhiteSpace(siteStripe.DisplayTemplate) ? "SmallCard" : siteStripe.DisplayTemplate;
+                    _openInNewTab = siteStripe.OpenInNewTab;
+                    _relAttribute = string.IsNullOrWhiteSpace(siteStripe.RelAttribute) ? "nofollow, sponsored" : siteStripe.RelAttribute;
+                    _rawHtmlEmbed = siteStripe.RawHTMLEmbed;
+                    _createdby = siteStripe.CreatedBy;
+                    _createdon = siteStripe.CreatedOn;
+                    _modifiedby = siteStripe.ModifiedBy;
+                    _modifiedon = siteStripe.ModifiedOn;
+                    _siteId = siteStripe.SiteId;
                 }
             }
         }
@@ -73,29 +291,139 @@
         }
     }
 
+    private async Task LoadCategories()
+    {
+        _categories = (await ClientCategoryService.GetCategoriesAsync(ModuleState.ModuleId))
+            .OrderBy(c => c.SortOrder)
+            .ThenBy(c => c.Name, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        ParentItems = BuildTree(_categories);
+    }
+
+    private Task OnCategoryChanged()
+    {
+        if (_categoryId != -1)
+        {
+            _newCategoryName = null;
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private async Task CreateCategory()
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(_newCategoryName))
+            {
+                AddModuleMessage(Localizer["Message.CategoryCreateRequired"], MessageType.Warning);
+                return;
+            }
+
+            var category = new Category
+            {
+                ModuleId = ModuleState.ModuleId,
+                Name = _newCategoryName.Trim(),
+                Slug = _newCategoryName.Trim().ToLowerInvariant().Replace(" ", "-"),
+                ParentId = 0,
+                SortOrder = _categories.Count,
+                IsActive = true
+            };
+
+            category = await ClientCategoryService.AddCategoryAsync(category);
+            await LoadCategories();
+            _categoryId = category.CategoryId;
+            _newCategoryName = null;
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            await logger.LogError(ex, "Error Creating Category {Error}", ex.Message);
+            AddModuleMessage(Localizer["Message.CategoryCreateError"], MessageType.Error);
+        }
+    }
+
+    private async Task Delete(SiteStripe SiteStripe)
+    {
+        try
+        {
+            await ClientSiteStripeService.DeleteSiteStripeAsync(SiteStripe.SiteStripeId, ModuleState.ModuleId);
+            await logger.LogInformation("SiteStripe Deleted {SiteStripe}", SiteStripe);
+            _SiteStripes = await ClientSiteStripeService.GetSiteStripesAsync(ModuleState.ModuleId);
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            await logger.LogError(ex, "Error Deleting SiteStripe {SiteStripe} {Error}", SiteStripe, ex.Message);
+            AddModuleMessage(Localizer["Message.DeleteError"], MessageType.Error);
+        }
+    }
+
     private async Task Save()
     {
         try
         {
+            if (!_categoryId.HasValue || _categoryId.Value <= 0)
+            {
+                AddModuleMessage(Localizer["Message.CategoryRequired"], MessageType.Warning);
+                return;
+            }
+
             validated = true;
             var interop = new Oqtane.UI.Interop(JSRuntime);
             if (await interop.FormValid(form))
             {
-                if (PageState.Action == "Add")
+                SiteStripe siteStripe;
+                if (ModuleState == null)
                 {
-                    SiteStripe SiteStripe = new SiteStripe();
-                    SiteStripe.ModuleId = ModuleState.ModuleId;
-                    SiteStripe.Name = _name;
-                    SiteStripe = await ClientSiteStripeService.AddSiteStripeAsync(SiteStripe);
-                    await logger.LogInformation("SiteStripe Added {SiteStripe}", SiteStripe);
+                    AddModuleMessage(Localizer["Message.SaveError"], MessageType.Error);
+                    return;
+                }
+
+                if (string.Equals(PageState?.Action, "Add", StringComparison.OrdinalIgnoreCase))
+                {
+                    siteStripe = new SiteStripe
+                    {
+                        ModuleId = ModuleState.ModuleId
+                    };
                 }
                 else
                 {
-                    SiteStripe SiteStripe = await ClientSiteStripeService.GetSiteStripeAsync(_id, ModuleState.ModuleId);
-                    SiteStripe.Name = _name;
-                    await ClientSiteStripeService.UpdateSiteStripeAsync(SiteStripe);
-                    await logger.LogInformation("SiteStripe Updated {SiteStripe}", SiteStripe);
+                    siteStripe = await ClientSiteStripeService.GetSiteStripeAsync(_id, ModuleState.ModuleId);
+                    if (siteStripe == null)
+                    {
+                        AddModuleMessage(Localizer["Message.LoadError"], MessageType.Error);
+                        return;
+                    }
                 }
+
+                siteStripe.Name = _name;
+                siteStripe.ASIN = _asin;
+                siteStripe.AffiliateURL = _affiliateUrl;
+                siteStripe.ImageURL = _imageUrl;
+                siteStripe.VideoURL = _videoUrl;
+                siteStripe.PricePoint = _pricePoint;
+                siteStripe.ProductCategory = _productCategory;
+                siteStripe.CategoryId = _categoryId.Value;
+                siteStripe.IsPrimeEligible = _isPrimeEligible;
+                siteStripe.IsActive = _isActive;
+                siteStripe.DisplayTemplate = _displayTemplate;
+                siteStripe.OpenInNewTab = _openInNewTab;
+                siteStripe.RelAttribute = _relAttribute;
+                siteStripe.RawHTMLEmbed = await RichTextEditorHtml.GetHtml(); //_rawHtmlEmbed;
+                siteStripe.SiteId = _siteId;
+
+                if (string.Equals(PageState?.Action, "Add", StringComparison.OrdinalIgnoreCase))
+                {
+                    siteStripe = await ClientSiteStripeService.AddSiteStripeAsync(siteStripe);
+                    await logger.LogInformation("SiteStripe Added {SiteStripe}", siteStripe);
+                }
+                else
+                {
+                    await ClientSiteStripeService.UpdateSiteStripeAsync(siteStripe);
+                    await logger.LogInformation("SiteStripe Updated {SiteStripe}", siteStripe);
+                }
+
                 NavigationManager.NavigateTo(NavigateUrl());
             }
             else
@@ -109,4 +437,71 @@
             AddModuleMessage(Localizer["Message.SaveError"], MessageType.Error);
         }
     }
+
+    private string FormatCurrency(decimal price)
+    {
+        try
+        {
+            if (price == 0)
+            {
+                return Localizer["ZeroPrice.Text"];
+            }
+
+            var cultureInfo = new System.Globalization.CultureInfo("en-US"); // Example: US Dollar
+
+            // Show no decimals if price is a whole number, otherwise show two decimals
+            if (price == Math.Floor(price))
+            {
+                return price.ToString("C0", cultureInfo); // No decimals
+            }
+            else
+            {
+                return price.ToString("C2", cultureInfo); // Two decimals
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Could not format currency using CurrentUICulture.");
+            return price.ToString("C");
+        }
+    }
+
+    private List<Category> BuildTree(List<Category> flatList)
+    {
+        var lookup = flatList.ToDictionary(x => x.CategoryId);
+        var rootItems = new List<Category>();
+
+        foreach (var item in flatList)
+        {
+            if (item.ParentId == 0 || !lookup.ContainsKey(item.ParentId))
+            {
+                rootItems.Add(item);
+            }
+            else
+            {
+                lookup[item.ParentId].Children.Add(item);
+            }
+        }
+        return rootItems;
+    }
+
+    private RenderFragment RenderOptions(IEnumerable<Category> items, int level = 0) => builder =>
+{
+    int seq = 0;
+    foreach (var item in items)
+    {
+        builder.OpenElement(seq++, "option");
+        builder.AddAttribute(seq++, "value", item.CategoryId);
+        builder.AddContent(seq++, new string('\u00A0', level * 4) + item.Name); // Indent with non-breaking spaces
+        builder.CloseElement();
+
+        if (item.Children != null && item.Children.Count > 0)
+        {
+            builder.AddContent(seq++, RenderOptions(item.Children, level + 1));
+        }
+    }
+};
+
+
+
 }

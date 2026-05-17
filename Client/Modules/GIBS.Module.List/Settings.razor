@@ -1,12 +1,25 @@
 @using GIBS.Module.SiteStripe.Models
 
-@namespace GIBS.Module.SiteStripe
+@namespace GIBS.Module.SiteStripe.List
 @inherits ModuleBase
 @implements Oqtane.Interfaces.ISettingsControl
 @inject ISettingService SettingService
 @inject IStringLocalizer<Settings> Localizer
 
 <div class="container">
+
+    <div class="row mb-1 align-items-center">
+        <label class="col-sm-3 col-form-label" for="displaytemplate">Display Template:</label>
+        <div class="col-sm-9">
+            <select id="displaytemplate" class="form-select" @bind="_settings.DisplayTemplate">
+                <option value="TextOnly">TextOnly</option>
+                <option value="SmallCard">SmallCard</option>
+                <option value="Showcase">Showcase</option>
+                <option value="Carousel">Carousel</option>
+            </select>
+        </div>
+    </div>
+
     <div class="row mb-1 align-items-center">
         <Label Class="col-sm-3" For="storeid" HelpText="Amazon Associate tracking tag" ResourceKey="StoreID" ResourceType="@resourceType">StoreID:</Label>
         <div class="col-sm-9">
@@ -29,11 +42,26 @@
     </div>
 
     <div class="row mb-1 align-items-center">
-        <Label Class="col-sm-3" For="apicredentials" HelpText="Optional Amazon PA-API credentials" ResourceKey="APICredentials" ResourceType="@resourceType">API Credentials:</Label>
+        <Label Class="col-sm-3" For="pagesize" HelpText="Number of items per page" ResourceKey="PageSize" ResourceType="@resourceType">Page Size:</Label>
         <div class="col-sm-9">
-            <textarea id="apicredentials" class="form-control" rows="3" @bind="_settings.APICredentials"></textarea>
+            <input id="pagesize" type="number" class="form-control" @bind="_settings.PageSize" />
         </div>
     </div>
+
+    <div class="row mb-1 align-items-center">
+        <Label Class="col-sm-3" For="numbervisible" HelpText="Number of items to display" ResourceKey="NumberVisible" ResourceType="@resourceType">Number Visible:</Label>
+        <div class="col-sm-9">
+            <input id="numbervisible" type="number" class="form-control" @bind="_settings.NumberVisible" />
+        </div>
+    </div>
+
+    <div class="row mb-1 align-items-center">
+        <Label Class="col-sm-3" For="imageheight" HelpText="Height of images in pixels" ResourceKey="ImageHeight" ResourceType="@resourceType">Image Height:</Label>
+        <div class="col-sm-9">
+            <input id="imageheight" type="text" class="form-control" @bind="_settings.ImageHeight" />
+        </div>
+    </div>
+
 </div>
 
 @code {
@@ -41,6 +69,7 @@
     public override string Title => "SiteStripe Settings";
 
     private SiteStripeSettings _settings = new();
+    // private string _displayTemplate;
 
     protected override async Task OnInitializedAsync()
     {
@@ -51,6 +80,10 @@
             _settings.DefaultButtonText = SettingService.GetSetting(settings, nameof(SiteStripeSettings.DefaultButtonText), "Check Price on Amazon");
             _settings.DefaultDisclosureStatement = SettingService.GetSetting(settings, nameof(SiteStripeSettings.DefaultDisclosureStatement), "As an Amazon Associate, I earn from qualifying purchases");
             _settings.APICredentials = SettingService.GetSetting(settings, nameof(SiteStripeSettings.APICredentials), "");
+            _settings.DisplayTemplate = SettingService.GetSetting(settings, nameof(SiteStripeSettings.DisplayTemplate), "");
+            _settings.PageSize = SettingService.GetSetting(settings, nameof(SiteStripeSettings.PageSize), "8");
+            _settings.NumberVisible = SettingService.GetSetting(settings, nameof(SiteStripeSettings.NumberVisible), "5");
+            _settings.ImageHeight = SettingService.GetSetting(settings, nameof(SiteStripeSettings.ImageHeight), "200px;");
         }
         catch (Exception ex)
         {
@@ -67,6 +100,10 @@
             settings = SettingService.SetSetting(settings, nameof(SiteStripeSettings.DefaultButtonText), _settings.DefaultButtonText);
             settings = SettingService.SetSetting(settings, nameof(SiteStripeSettings.DefaultDisclosureStatement), _settings.DefaultDisclosureStatement);
             settings = SettingService.SetSetting(settings, nameof(SiteStripeSettings.APICredentials), _settings.APICredentials);
+            settings = SettingService.SetSetting(settings, nameof(SiteStripeSettings.DisplayTemplate), _settings.DisplayTemplate);
+            settings = SettingService.SetSetting(settings, nameof(SiteStripeSettings.PageSize), _settings.PageSize);
+            settings = SettingService.SetSetting(settings, nameof(SiteStripeSettings.NumberVisible), _settings.NumberVisible);
+            settings = SettingService.SetSetting(settings, nameof(SiteStripeSettings.ImageHeight), _settings.ImageHeight);
             await SettingService.UpdateModuleSettingsAsync(settings, ModuleState.ModuleId);
         }
         catch (Exception ex)

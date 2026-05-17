@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
         <id>$projectname$</id>
-        <version>1.0.0</version>
+        <version>1.0.3</version>
         <authors>GIBS</authors>
         <owners>GIBS</owners>
         <title>SiteStripe</title>
@@ -17,7 +17,7 @@
         <summary></summary>
         <packageTypes>
             <packageType name="Dependency" />
-            <packageType name="Oqtane.Framework" version="10.1.2" />
+            <packageType name="Oqtane.Framework" version="10.1.1" />
         </packageTypes>
     </metadata>
     <files>

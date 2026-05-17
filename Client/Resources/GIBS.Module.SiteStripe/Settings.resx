@@ -117,10 +117,28 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="SettingName.Text" xml:space="preserve">
-    <value>Name: </value>
+  <data name="StoreID.Text" xml:space="preserve">
+    <value>StoreID:</value>
   </data>
-  <data name="SettingName.HelpText" xml:space="preserve">
-    <value>Enter a value</value>
+  <data name="StoreID.HelpText" xml:space="preserve">
+    <value>Amazon Associate tracking tag</value>
+  </data>
+  <data name="DefaultButtonText.Text" xml:space="preserve">
+    <value>Default Button Text:</value>
+  </data>
+  <data name="DefaultButtonText.HelpText" xml:space="preserve">
+    <value>Default call-to-action text</value>
+  </data>
+  <data name="DefaultDisclosureStatement.Text" xml:space="preserve">
+    <value>Default Disclosure Statement:</value>
+  </data>
+  <data name="DefaultDisclosureStatement.HelpText" xml:space="preserve">
+    <value>FTC disclosure statement</value>
+  </data>
+  <data name="APICredentials.Text" xml:space="preserve">
+    <value>API Credentials:</value>
+  </data>
+  <data name="APICredentials.HelpText" xml:space="preserve">
+    <value>Optional Amazon PA-API credentials</value>
   </data>
 </root>
