@@ -411,7 +411,7 @@ else
                 siteStripe.OpenInNewTab = _openInNewTab;
                 siteStripe.RelAttribute = _relAttribute;
                 siteStripe.RawHTMLEmbed = await RichTextEditorHtml.GetHtml(); //_rawHtmlEmbed;
-                siteStripe.SiteId = _siteId;
+                siteStripe.SiteId = string.Equals(PageState?.Action, "Add", StringComparison.OrdinalIgnoreCase) ? ModuleState.SiteId : _siteId;
 
                 if (string.Equals(PageState?.Action, "Add", StringComparison.OrdinalIgnoreCase))
                 {

@@ -26,7 +26,7 @@ namespace GIBS.Module.SiteStripe.Models
         public string RawHTMLEmbed { get; set; }
         public string VideoURL { get; set; }
         [NotMapped]
-        public string SmallName => Name.Length > 35 ? Name.Substring(0, 32) + "..." : Name;
+        public string SmallName => Name.Length > 54 ? Name.Substring(0,51) + "..." : Name;
         [NotMapped]
         public string CategoryName { get; set; }
     }

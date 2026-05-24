@@ -1,134 +1,82 @@
-/* Module Custom Styles */
-
+/* ==========================================================================
+   Module Custom Styles (Global Grid Cards)
+   ========================================================================== */
 .site-stripe-small-card {
     border: 1px solid rgba(0, 0, 0, 0.125);
 }
 
 .site-stripe-small-card-image {
-    width: 100%;
-    height: 240px;
+    /*width: 100%;
+    height: 240px;*/
+    max-height: 240px;
     object-fit: cover;
 }
 
-/* Carousel Styles */
-#gibsCarousel {
+/* ==========================================================================
+   Carousel Main Base Container
+   ========================================================================== */
+#gibsSSCarousel {
     background-color: #f8f9fa;
     border-radius: 8px;
-    overflow: visible;
+    overflow: visible; /* Allows custom high-z-index buttons to hang off edges safely */
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     position: relative;
+    max-width: 100%;
+    margin: 0 auto;
 }
 
-.carousel-inner {
-    border-radius: 8px;
-}
+    #gibsSSCarousel .carousel-inner {
+        border-radius: 8px;
+    }
 
-.carousel-item {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 400px;
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-}
+    /* ==========================================================================
+   Carousel Item Layout Structure (FIXED TRANSITION LAYER BUG)
+   ========================================================================== */
+    #gibsSSCarousel .carousel-item {
+        position: relative;
+        padding: 1.5rem 5rem;
+        min-height: auto;
+        /* 
+       CRITICAL FIX: Dropped display: flex. 
+       Forcing flexbox on .carousel-item overrode Bootstrap's inline 'display: none',
+       which caused slides 5-8 to load flatly behind slides 1-4.
+    */
+    }
 
-.carousel-item-image-wrapper {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-}
+        /* Safety override rule to ensure Bootstrap manages visible states perfectly */
+        #gibsSSCarousel .carousel-item.active {
+            display: block !important;
+        }
 
-.carousel-image-link {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-    text-decoration: none;
-    position: relative;
-    z-index: 1;
-}
+    #gibsSSCarousel .carousel-slide-content {
+        width: 100%;
+        margin: 0;
+    }
 
-.carousel-image {
-    max-width: 90%;
-    max-height: 85%;
-    object-fit: contain;
-    transition: transform 0.3s ease;
-}
+    /* ==========================================================================
+   Inner Slider Card Aesthetics
+   ========================================================================== */
+    #gibsSSCarousel .site-stripe-carousel-card {
+        border: 1px solid rgba(0, 0, 0, 0.125);
+        overflow: hidden;
+    }
 
-.carousel-image-link:hover .carousel-image {
-    transform: scale(1.05);
-}
+    #gibsSSCarousel .carousel-card-image-link {
+        display: block;
+        width: 100%;
+        text-decoration: none;
+    }
 
-.carousel-info-overlay {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
-    color: white;
-    padding: 20px;
-    text-decoration: none;
-    transition: background 0.3s ease;
-}
+    #gibsSSCarousel .carousel-card-image {
+        display: block;
+        width: 100%;
+        max-height: 240px;
+        object-fit: cover;
+    }
 
-.carousel-info-overlay:hover {
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.95), transparent);
-}
-
-.carousel-info-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-bottom: 5px;
-    line-height: 1.3;
-}
-
-.carousel-info-category {
-    font-size: 0.875rem;
-    opacity: 0.9;
-    margin-bottom: 8px;
-}
-
-.carousel-info-description {
-    font-size: 0.8rem;
-    opacity: 0.85;
-    line-height: 1.4;
-    margin-bottom: 10px;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-.carousel-control-prev,
-.carousel-control-next {
-    width: 50px;
-    height: 50px;
-    top: 50%;
-    transform: translateY(-50%);
-    background-color: rgba(0, 0, 0, 0.3) !important;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background-color 0.3s ease;
-}
-
-.carousel-control-prev:hover,
-.carousel-control-next:hover {
-    background-color: rgba(0, 0, 0, 0.5) !important;
-}
-
-.carousel-control-prev-icon,
-.carousel-control-next-icon {
-    filter: brightness(1.5);
-}
-
-/* Option 3: Enhanced Arrow Buttons */
+/* ==========================================================================
+   Enhanced Custom Navigation Buttons
+   ========================================================================== */
 .carousel-control-btn {
     position: absolute;
     top: 50%;
@@ -180,39 +128,45 @@
     pointer-events: none;
 }
 
-/* Responsive adjustments */
+/* ==========================================================================
+   Mobile Responsive Rules
+   ========================================================================== */
 @media (max-width: 768px) {
-    .carousel-control-btn {
+    #gibsSSCarousel .carousel-item {
+        padding: 1rem 3.5rem;
+    }
+
+    #gibsSSCarousel .carousel-card-image {
+        height: 200px;
+    }
+
+    #gibsSSCarousel .carousel-control-btn {
         width: 55px;
         height: 55px;
         font-size: 22px;
     }
 
-    .carousel-control-prev {
+    .carousel-control-prev.carousel-control-btn {
         left: 10px;
     }
 
-    .carousel-control-next {
+    .carousel-control-next.carousel-control-btn {
         right: 10px;
     }
 }
 
-.gibsCarousel {
-    max-width: 100%;
-    margin: 0 auto;
-}
-
-.carousel-item {
-    min-height: 300px;
+/* ==========================================================================
+   Unused / Legacy Single-Image Overlay Reference Rules
+   (Kept intact for backward compatibility)
+   ========================================================================== */
+.carousel-item-image-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-}
-
-.carousel-image {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
+    overflow: hidden;
 }
 
 .carousel-image-link {
@@ -221,4 +175,58 @@
     justify-content: center;
     width: 100%;
     height: 100%;
+    text-decoration: none;
+    position: relative;
+    z-index: 1;
+}
+
+.carousel-image {
+    max-width: 90%;
+    max-height: 85%;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+}
+
+.carousel-image-link:hover .carousel-image {
+    transform: scale(1.05);
+}
+
+.carousel-info-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+    color: white;
+    padding: 20px;
+    text-decoration: none;
+    transition: background 0.3s ease;
+}
+
+    .carousel-info-overlay:hover {
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.95), transparent);
+    }
+
+.carousel-info-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 5px;
+    line-height: 1.3;
+}
+
+.carousel-info-category {
+    font-size: 0.875rem;
+    opacity: 0.9;
+    margin-bottom: 8px;
+}
+
+.carousel-info-description {
+    font-size: 0.8rem;
+    opacity: 0.85;
+    line-height: 1.4;
+    margin-bottom: 10px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }

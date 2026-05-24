@@ -110,6 +110,7 @@
         try
         {
             await LoadCategories();
+            _siteId = ModuleState.SiteId;
 
             if (PageState.QueryString.ContainsKey("id") && int.TryParse(PageState.QueryString["id"], out _id))
             {
@@ -204,7 +205,7 @@
                         ParentId = _parentid,
                         SortOrder = _sortorder,
                         IsActive = _isactive,
-                        SiteId = _siteId
+                        SiteId = ModuleState.SiteId
                     };
 
                     await ClientCategoryService.AddCategoryAsync(category);
@@ -250,6 +251,7 @@
         _parentid = 0;
         _sortorder = GetNextSortOrder(_parentid);
         _isactive = true;
+        _siteId = ModuleState.SiteId;
         validated = false;
     }
 

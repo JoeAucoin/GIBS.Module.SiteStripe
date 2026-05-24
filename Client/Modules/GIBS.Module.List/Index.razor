@@ -1,7 +1,6 @@
 @using GIBS.Module.SiteStripe.Services
 @using GIBS.Module.SiteStripe.Models
 
-
 @namespace GIBS.Module.SiteStripe.List
 @inherits ModuleBase
 @inject ISiteStripeService ClientSiteStripeService
@@ -32,7 +31,7 @@ else
                         <a href="@siteStripe.AffiliateURL"
                            target="@(siteStripe.OpenInNewTab ? "_blank" : "_self")"
                            rel="@siteStripe.RelAttribute" title="@siteStripe.Name"
-                           class="btn btn-outline-primary btn-sm text-nowrap"><i class="bi bi-amazon"></i> Buy on Amazon</a>
+                           class="btn btn-outline-primary btn-sm text-nowrap">@((MarkupString)_defaultButtonText)</a>
                     </div>
                 }
             </div>
@@ -46,15 +45,15 @@ else
                         <div class="card h-100 site-stripe-small-card">
                             @if (!string.IsNullOrWhiteSpace(siteStripe.ImageURL))
                             {
-                                <img src="@siteStripe.ImageURL" alt="@siteStripe.Name" class="card-img-top site-stripe-small-card-image" />
+                                <img src="@siteStripe.ImageURL" alt="@siteStripe.Name" class="card-img-top img-fluid" />
                             }
                             <div class="card-body d-flex flex-column">
                                 <h6 class="card-title mb-1">@siteStripe.Name</h6>
                                 <p class="card-text text-muted small mb-3">@(string.IsNullOrWhiteSpace(siteStripe.CategoryName) ? siteStripe.ProductCategory : siteStripe.CategoryName)</p>
                                 <a href="@siteStripe.AffiliateURL"
                                 target="@(siteStripe.OpenInNewTab ? "_blank" : "_self")"
-                                rel="@siteStripe.RelAttribute"
-                                class="btn btn-outline-primary btn-lg mt-auto"><i class="bi bi-amazon"></i> Buy on Amazon</a>
+                                rel="@siteStripe.RelAttribute" 
+                                   class="btn btn-outline-primary btn-lg mt-auto">@((MarkupString)_defaultButtonText)</a>
                             </div>
                         </div>
                     </div>
@@ -83,7 +82,7 @@ else
                                         <a href="@siteStripe.AffiliateURL"
                                            target="@(siteStripe.OpenInNewTab ? "_blank" : "_self")"
                                            rel="@siteStripe.RelAttribute"
-                                           class="btn btn-outline-primary btn-lg mt-auto"><i class="bi bi-amazon"></i> Buy on Amazon</a>
+                                           class="btn btn-outline-primary btn-lg mt-auto">@((MarkupString)_defaultButtonText)</a>
                                     </div>
                                 </div>
                             </div>
@@ -94,41 +93,65 @@ else
         }
         else if (string.Equals(displayTemplate, "Carousel", StringComparison.OrdinalIgnoreCase))
         {
-            <div id="gibsCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
+            <div id="gibsSSCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
                 <div class="carousel-inner" role="listbox">
-                    @for (int i = 0; i < FilteredSiteStripes.Count(); i++)
+                    @for (var slideIndex = 0; slideIndex < CarouselSlides.Count; slideIndex++)
                     {
-                        var siteStripe = FilteredSiteStripes.ElementAt(i);
-                        var loadingMode = i < 6 ? "eager" : "lazy";
-                        <div class="carousel-item @(i == 0 ? "active" : "")">
-                            <div class="carousel-item-image-wrapper">
-                                @if (!string.IsNullOrWhiteSpace(siteStripe.ImageURL))
+                        var slideItems = CarouselSlides[slideIndex];
+                        <div class="carousel-item @(slideIndex == 0 ? "active" : "")">
+
+                            @* FIX 1: Removed 'col-12 col-md-6' from the child and instead
+                       used row-cols utilities here.
+                       - 'row-cols-1': 1 card on mobile
+                       - 'row-cols-md-2': 2 cards on tablet
+                       - 'row-cols-lg-@CarouselItemsPerSlide': Dynamically outputs 1, 2, 4, or 6 on desktop!  
+                    *@
+                          
+                            <div class="carousel-slide-content row row-cols-1 row-cols-md-2 row-cols-lg-@CarouselItemsPerSlide g-3 justify-content-centerw-100 mx-0">
+                                @for (var itemIndex = 0; itemIndex < slideItems.Length; itemIndex++)
                                 {
-                                    <a href="@siteStripe.AffiliateURL"
-                                       target="@(siteStripe.OpenInNewTab ? "_blank" : "_self")"
-                                       rel="@siteStripe.RelAttribute"
-                                       class="carousel-image-link">
-                                        <div class="d-flex justify-content-center align-items-center">
-                                            <img src="@siteStripe.ImageURL" class="carousel-image"
-                                                 alt="@siteStripe.Name" 
-                                                 style="max-height:@(_imageHeight);" 
-                                                 loading="@loadingMode" decoding="async" />
+                                    var siteStripe = slideItems[itemIndex];
+                                    var loadingMode = slideIndex == 0 && itemIndex < CarouselItemsPerSlide ? "eager" : "lazy";
+
+                                    <div class="col d-flex">
+                                        @* 'd-flex' ensures the card stretches to the row height *@
+                                        <div class="card h-100 w-100 site-stripe-carousel-card">
+                                            @if (!string.IsNullOrWhiteSpace(siteStripe.ImageURL))
+                                            {
+                                                <a href="@siteStripe.AffiliateURL"
+                                                   target="@(siteStripe.OpenInNewTab ? "_blank" : "_self")"
+                                                   rel="@siteStripe.RelAttribute"
+                                                   class="carousel-card-image-link"
+                                                   title="@siteStripe.Name">
+                                                    <img src="@siteStripe.ImageURL"
+                                                         class="carousel-card-image"
+                                                         alt="@siteStripe.Name"
+                                                         style="max-height:@(_imageHeight);"
+                                                         loading="@loadingMode"
+                                                         decoding="async" />
+                                                </a>
+                                            }
+                                            @* FIX 2: Added 'h-100' here so mt-auto pushes the button down properly *@
+                                            <div class="card-body d-flex flex-column h-100">
+                                                <h6 class="card-title mb-1">@siteStripe.SmallName</h6>
+                                                <p class="card-text text-muted small mb-3">@(string.IsNullOrWhiteSpace(siteStripe.CategoryName) ? siteStripe.ProductCategory : siteStripe.CategoryName)</p>
+                                                <a href="@siteStripe.AffiliateURL"
+                                                   target="@(siteStripe.OpenInNewTab ? "_blank" : "_self")"
+                                                   rel="@siteStripe.RelAttribute"
+                                                   class="btn btn-outline-primary btn-sm mt-auto">@((MarkupString)_defaultButtonText)</a>
+                                            </div>
                                         </div>
-                                        <div class="carousel-info-overlay">
-                                            <div class="carousel-info-title">@siteStripe.SmallName</div>
-                                         
-                                        </div>
-                                    </a>
+                                    </div>
                                 }
                             </div>
                         </div>
                     }
                 </div>
-                <a class="carousel-control-prev carousel-control-btn" href="#gibsCarousel" role="button" data-bs-slide="prev" aria-label="Previous slide">
-                    <i class="bi bi-chevron-left"></i>
+                <a class="carousel-control-prev carousel-control-btn" data-bs-target="#gibsSSCarousel" role="button" data-bs-slide="prev" aria-label="Previous slide">
+                    <i class="bi bi-chevron-left fs-6"></i>
                 </a>
-                <a class="carousel-control-next carousel-control-btn" href="#gibsCarousel" role="button" data-bs-slide="next" aria-label="Next slide">
-                    <i class="bi bi-chevron-right"></i>
+                <a class="carousel-control-next carousel-control-btn" data-bs-target="#gibsSSCarousel" role="button" data-bs-slide="next" aria-label="Next slide">
+                    <i class="bi bi-chevron-right fs-6"></i>
                 </a>
             </div>
         }
@@ -173,6 +196,13 @@ else
                 </ul>
             </nav>
         }
+
+        <div class="row mt-4 mb-2">
+            <div class="col-12 col-md-6 offset-md-3">
+                <p class="text-muted text-center mb-0" style="font-size: 12px;">@_defaultDisclosureStatement</p>
+            </div>
+        </div>
+
     }
     else
     {
@@ -185,7 +215,7 @@ else
 
     public override List<Resource> Resources => new List<Resource>()
     {
-        new Stylesheet("_content/GIBS.Module.SiteStripe/Module.css?v=7"),
+        new Stylesheet("_content/GIBS.Module.SiteStripe/Module.css?v=13"),
         new Script("_content/GIBS.Module.SiteStripe/Module.js?v=7")
     };
 
@@ -196,6 +226,8 @@ else
     private string _displayTemplate;
     private string _imageHeight;
     private int _numberVisible = 5;
+    private string _defaultDisclosureStatement;
+    private string _defaultButtonText = "Check Price on Amazon";
 
     private List<SiteStripe> FilteredSiteStripes => _SiteStripes?
         .Where(item => item.IsActive)
@@ -204,6 +236,12 @@ else
     private IEnumerable<SiteStripe> PagedSiteStripes => FilteredSiteStripes
         .Skip((_currentPage - 1) * _pageSize)
         .Take(_pageSize);
+
+    private int CarouselItemsPerSlide => Math.Max(1, _numberVisible);
+
+    private List<SiteStripe[]> CarouselSlides => FilteredSiteStripes
+        .Chunk(CarouselItemsPerSlide)
+        .ToList();
 
     private int TotalPages => (int)Math.Ceiling((double)FilteredSiteStripes.Count / _pageSize);
 
@@ -219,19 +257,32 @@ else
                _displayTemplate = SettingService.GetSetting(ModuleState.Settings, "DisplayTemplate", "SmallCard");
                _imageHeight = SettingService.GetSetting(ModuleState.Settings, "ImageHeight", "300px");
             _numberVisible = int.TryParse(SettingService.GetSetting(ModuleState.Settings, "NumberVisible", "5"), out int numberVisible) ? numberVisible : 5;
+            _defaultDisclosureStatement = SettingService.GetSetting(ModuleState.Settings, "DefaultDisclosureStatement", "As an Amazon Associate, I earn from qualifying purchases");
+            _defaultButtonText = SettingService.GetSetting(ModuleState.Settings, "DefaultButtonText", "Check Price on Amazon");
 
-               _SiteStripes = await ClientSiteStripeService.GetSiteStripesBySiteIdAsync(ModuleState.SiteId);
+            var siteStripes = await ClientSiteStripeService.GetSiteStripesBySiteIdAsync(ModuleState.SiteId);
+            _SiteStripes = siteStripes.OrderByDescending(s => s.ModifiedOn).ToList();
+             //  _SiteStripes = await ClientSiteStripeService.GetSiteStripesBySiteIdAsync(ModuleState.SiteId);
 
                // Get page number from query parameters
-               var uri = NavigationManager.Uri;
-               var queryIndex = uri.IndexOf("?page=");
-               if (queryIndex >= 0 && int.TryParse(uri.Substring(queryIndex + 6).Split('&')[0], out int page))
+               var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+               _currentPage = 1;
+
+               if (!string.IsNullOrWhiteSpace(uri.Query))
                {
-                   _currentPage = page > 0 ? page : 1;
-               }
-               else
-               {
-                   _currentPage = 1;
+                   var queryParams = uri.Query.TrimStart('?').Split('&', StringSplitOptions.RemoveEmptyEntries);
+                   foreach (var queryParam in queryParams)
+                   {
+                       var keyValue = queryParam.Split('=', 2);
+                       if (keyValue.Length == 2
+                           && string.Equals(keyValue[0], "page", StringComparison.OrdinalIgnoreCase)
+                           && int.TryParse(Uri.UnescapeDataString(keyValue[1]), out var parsedPage)
+                           && parsedPage > 0)
+                       {
+                           _currentPage = parsedPage;
+                           break;
+                       }
+                   }
                }
            }
            catch (Exception ex)

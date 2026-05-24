@@ -48,8 +48,8 @@
         {
             Dictionary<string, string> settings = await SettingService.GetModuleSettingsAsync(ModuleState.ModuleId);
             _settings.StoreID = SettingService.GetSetting(settings, nameof(SiteStripeSettings.StoreID), "");
-            _settings.DefaultButtonText = SettingService.GetSetting(settings, nameof(SiteStripeSettings.DefaultButtonText), "Check Price on Amazon");
-            _settings.DefaultDisclosureStatement = SettingService.GetSetting(settings, nameof(SiteStripeSettings.DefaultDisclosureStatement), "As an Amazon Associate, I earn from qualifying purchases");
+            _settings.DefaultButtonText = SettingService.GetSetting(settings, nameof(SiteStripeSettings.DefaultButtonText), @"<i class=""bi bi-amazon""></i> View on Amazon");
+            _settings.DefaultDisclosureStatement = SettingService.GetSetting(settings, nameof(SiteStripeSettings.DefaultDisclosureStatement), "This site is a participant in the Amazon Services LLC Associates Program, an affiliate advertising program designed to provide a means for sites to earn advertising fees by advertising and linking to amazon.com.");
             _settings.APICredentials = SettingService.GetSetting(settings, nameof(SiteStripeSettings.APICredentials), "");
         }
         catch (Exception ex)

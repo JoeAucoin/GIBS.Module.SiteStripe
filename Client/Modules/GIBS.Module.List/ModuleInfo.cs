@@ -9,9 +9,9 @@ namespace GIBS.Module.SiteStripe.List
         {
             Name = "SiteStripe List",
             Description = "Widgets For Displaying Blog SiteStripe Records In A Variety Of Formats",
-            Version = "1.0.3",
+            Version = "1.0.5",
             ServerManagerType = "GIBS.Module.SiteStripe.Manager.SiteStripeManager, GIBS.Module.SiteStripe.Server.Oqtane",
-            ReleaseVersions = "1.0.0,1.0.1,1.0.2,1.0.3",
+            ReleaseVersions = "1.0.0,1.0.1,1.0.2,1.0.3,1.0.4,1.0.5",
             Dependencies = "GIBS.Module.SiteStripe.Shared.Oqtane",
             PackageName = "GIBS.Module.SiteStripe.List" 
         };
