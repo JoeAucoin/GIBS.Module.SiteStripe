@@ -172,6 +172,6 @@
     <value>Unable to create category.</value>
   </data>
   <data name="Category" xml:space="preserve">
-    <value>Amazon Category</value>
+    <value>Amazon ProductCategory</value>
   </data>
 </root>

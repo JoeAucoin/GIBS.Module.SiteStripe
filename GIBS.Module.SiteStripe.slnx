@@ -53,6 +53,9 @@
   <Folder Name="/docs/">
     <File Path="docs/deviations.md" />
     <File Path="docs/ai-decision-timeline.md" />
+    <File Path="E:/_Clients/GIBS.net/SiteStripe/sitestripe-categories.png" />
+    <File Path="E:/_Clients/GIBS.net/SiteStripe/sitestripe-edit.png" />
+    <File Path="E:/_Clients/GIBS.net/SiteStripe/sitestripe-index.png" />
   </Folder>
   <Project Path="Client\GIBS.Module.SiteStripe.Client.csproj" />
   <Project Path="Package\GIBS.Module.SiteStripe.Package.csproj" />

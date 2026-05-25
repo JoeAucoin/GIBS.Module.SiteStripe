@@ -27,13 +27,19 @@ else
             {
                 <div class="col-12 col-sm-6 col-md-4 col-lg-3">
                     <div class="card h-100 site-stripe-small-card">
-                        @if (!string.IsNullOrWhiteSpace(siteStripe.ImageURL))
-                        {
-                            <img src="@siteStripe.ImageURL" alt="@siteStripe.Name" class="card-img-top img-fluid" />
-                        }
+                        <div class="position-relative">
+                            @if (!string.IsNullOrWhiteSpace(siteStripe.ImageURL))
+                            {
+                                <img src="@siteStripe.ImageURL" alt="@siteStripe.Name" class="card-img-top img-fluid" />
+                            }
+                            <div class="position-absolute top-0 end-0 m-2 z-3 site-stripe-edit-overlay">
+                                <ActionLink Action="Edit" Parameters="@($"id={siteStripe.SiteStripeId}")" Class="btn btn-light btn-sm rounded-pill site-stripe-edit-btn"
+                                            Security="SecurityAccessLevel.Edit" ResourceKey="EditButton" Text="@Localizer["EditButton"]" IconName="pencil" IconOnly="true" />
+                            </div>
+                        </div>
                         <div class="card-body d-flex flex-column">
                             <h6 class="card-title mb-1">@siteStripe.Name</h6>
-                            <p class="card-text text-muted small mb-3">@(string.IsNullOrWhiteSpace(siteStripe.CategoryName) ? siteStripe.ProductCategory : siteStripe.CategoryName)</p>
+                            <p class="card-text text-muted small mb-3">@(string.IsNullOrWhiteSpace(siteStripe.ProductCategory) ? siteStripe.CategoryName : siteStripe.ProductCategory)</p>
                             <a href="@siteStripe.AffiliateURL"
                                target="@(siteStripe.OpenInNewTab ? "_blank" : "_self")"
                                rel="@siteStripe.RelAttribute"
@@ -44,22 +50,42 @@ else
             }
         </div>
   
-
         @if (TotalPages > 1)
         {
             <nav class="mt-3" aria-label="SiteStripe pagination">
                 <ul class="pagination pagination-sm justify-content-center">
                     <li class="page-item @(_currentPage == 1 ? "disabled" : "")">
-                        <button type="button" class="page-link" @onclick="() => ChangePage(_currentPage - 1)">Previous</button>
+                        @if (_currentPage > 1)
+                        {
+                            <a href="@GetPageUrl(_currentPage - 1)" class="page-link">Previous</a>
+                        }
+                        else
+                        {
+                            <span class="page-link">Previous</span>
+                        }
                     </li>
                     @for (var pageNumber = 1; pageNumber <= TotalPages; pageNumber++)
                     {
                         <li class="page-item @(pageNumber == _currentPage ? "active" : "")" aria-current="@(pageNumber == _currentPage ? "page" : null)">
-                            <button type="button" class="page-link" @onclick="() => ChangePage(pageNumber)">@pageNumber</button>
+                            @if (pageNumber == _currentPage)
+                            {
+                                <span class="page-link">@pageNumber</span>
+                            }
+                            else
+                            {
+                                <a href="@GetPageUrl(pageNumber)" class="page-link">@pageNumber</a>
+                            }
                         </li>
                     }
                     <li class="page-item @(_currentPage == TotalPages ? "disabled" : "")">
-                        <button type="button" class="page-link" @onclick="() => ChangePage(_currentPage + 1)">Next</button>
+                        @if (_currentPage < TotalPages)
+                        {
+                            <a href="@GetPageUrl(_currentPage + 1)" class="page-link">Next</a>
+                        }
+                        else
+                        {
+                            <span class="page-link">Next</span>
+                        }
                     </li>
                 </ul>
             </nav>
@@ -83,11 +109,11 @@ else
 
     public override List<Resource> Resources => new List<Resource>()
     {
-        new Stylesheet("_content/GIBS.Module.SiteStripe/Module.css?v=3"),
+        new Stylesheet("_content/GIBS.Module.SiteStripe/Module.css?v=4"),
         new Script("_content/GIBS.Module.SiteStripe/Module.js")
     };
 
-    private const int PageSize = 10;
+    private int _pageSize = 8;
 
     List<SiteStripe> _SiteStripes;
     private int _currentPage = 1;
@@ -100,10 +126,12 @@ else
         .ToList() ?? new List<SiteStripe>();
 
     private IEnumerable<SiteStripe> PagedSiteStripes => FilteredSiteStripes
-        .Skip((_currentPage - 1) * PageSize)
-        .Take(PageSize);
+        .Skip((_currentPage - 1) * _pageSize)
+        .Take(_pageSize);
 
-    private int TotalPages => (int)Math.Ceiling((double)FilteredSiteStripes.Count / PageSize);
+    private int TotalPages => _pageSize > 0
+        ? (int)Math.Ceiling((double)FilteredSiteStripes.Count / _pageSize)
+        : 0;
 
     protected override async Task OnInitializedAsync()
     {
@@ -112,10 +140,37 @@ else
             _imageHeight = SettingService.GetSetting(ModuleState.Settings, "ImageHeight", "280px;");
             _defaultDisclosureStatement = SettingService.GetSetting(ModuleState.Settings, "DefaultDisclosureStatement", "As an Amazon Associate, I earn from qualifying purchases");
             _defaultButtonText = SettingService.GetSetting(ModuleState.Settings, "DefaultButtonText", "Check Price on Amazon");
-            
+
+            var pageSizeSetting = SettingService.GetSetting(ModuleState.Settings, "PageSize", "8");
+            _pageSize = int.TryParse(pageSizeSetting, out var parsedPageSize) && parsedPageSize > 0 ? parsedPageSize : 8;
+
             var siteStripes = await ClientSiteStripeService.GetSiteStripesAsync(ModuleState.ModuleId);
             _SiteStripes = siteStripes.OrderByDescending(s => s.ModifiedOn).ToList();
+
+            var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
             _currentPage = 1;
+
+            if (!string.IsNullOrWhiteSpace(uri.Query))
+            {
+                var queryParams = uri.Query.TrimStart('?').Split('&', StringSplitOptions.RemoveEmptyEntries);
+                foreach (var queryParam in queryParams)
+                {
+                    var keyValue = queryParam.Split('=', 2);
+                    if (keyValue.Length == 2
+                        && string.Equals(keyValue[0], "page", StringComparison.OrdinalIgnoreCase)
+                        && int.TryParse(Uri.UnescapeDataString(keyValue[1]), out var parsedPage)
+                        && parsedPage > 0)
+                    {
+                        _currentPage = parsedPage;
+                        break;
+                    }
+                }
+            }
+
+            if (TotalPages > 0)
+            {
+                _currentPage = Math.Min(_currentPage, TotalPages);
+            }
         }
         catch (Exception ex)
         {
@@ -124,14 +179,8 @@ else
         }
     }
 
-    private async Task ChangePage(int page)
+    private string GetPageUrl(int page)
     {
-        if (page < 1 || page > TotalPages)
-        {
-            return;
-        }
-
-        _currentPage = page;
-        await InvokeAsync(StateHasChanged);
+        return NavigationManager.GetUriWithQueryParameter("page", page);
     }
 }

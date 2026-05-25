@@ -16,6 +16,7 @@
 @inject NavigationManager NavigationManager
 @inject IStringLocalizer<Edit> Localizer
 @inject IHtmlTextService HtmlTextService
+@inject ISettingService SettingService
 
 <form @ref="form" class="@(validated ? " was-validated" : "needs-validation" )" novalidate>
     <div class="container">
@@ -152,7 +153,7 @@
 
 @if (@_SiteStripes.Count != 0)
 {
-    <Pager Items="@_SiteStripes">
+    <Pager Items="@_SiteStripes" PageSize="@_pageSize.ToString()" SearchProperties="Name,ASIN,ProductCategory,CategoryName">
         <Header>
             <th style="width: 1px;">&nbsp;</th>
             <th style="width: 1px;">&nbsp;</th>
@@ -160,7 +161,7 @@
             <th>@Localizer["Name"]</th>
             <th>@Localizer["ASIN"]</th>
             <th>@Localizer["Category"]</th>
-            <th>@Localizer["CategoryId"]</th>
+            
             <th>@Localizer["CategoryName"]</th>
             <th>@Localizer["PricePoint"]</th>
             <th>@Localizer["Status"]</th>
@@ -178,7 +179,7 @@
            
             <td>@context.ASIN</td>
             <td>@context.ProductCategory</td>
-            <td>@context.CategoryId</td>
+           
             <td>@(string.IsNullOrWhiteSpace(context.CategoryName) ? "" : context.CategoryName)</td>
             <td>@(context.PricePoint.HasValue ? FormatCurrency(context.PricePoint.Value) : "")</td>
             <td>@(context.IsActive ? Localizer["Active"] : Localizer["Inactive"])</td>
@@ -236,6 +237,7 @@ else
     private string _modifiedby;
     private DateTime _modifiedon;
     private int _siteId;
+    private int _pageSize = 8;
     private List<Category> _categories = new();
     private List<Category> ParentItems = new();
 
@@ -246,7 +248,11 @@ else
             await LoadCategories();
             ParentItems = BuildTree(_categories);
 
-            _SiteStripes = await ClientSiteStripeService.GetSiteStripesAsync(ModuleState.ModuleId);
+            var pageSizeSetting = SettingService.GetSetting(ModuleState.Settings, "PageSize", "8");
+            _pageSize = int.TryParse(pageSizeSetting, out var parsedPageSize) && parsedPageSize > 0 ? parsedPageSize : 8;
+
+            var siteStripes = await ClientSiteStripeService.GetSiteStripesAsync(ModuleState.ModuleId);
+            _SiteStripes = siteStripes.OrderByDescending(s => s.ModifiedOn).ToList();
             _siteId = ModuleState.SiteId;
 
             if (string.Equals(PageState?.Action, "Edit", StringComparison.OrdinalIgnoreCase))
@@ -349,7 +355,9 @@ else
         {
             await ClientSiteStripeService.DeleteSiteStripeAsync(SiteStripe.SiteStripeId, ModuleState.ModuleId);
             await logger.LogInformation("SiteStripe Deleted {SiteStripe}", SiteStripe);
-            _SiteStripes = await ClientSiteStripeService.GetSiteStripesAsync(ModuleState.ModuleId);
+            //_SiteStripes = await ClientSiteStripeService.GetSiteStripesAsync(ModuleState.ModuleId);
+            var siteStripes = await ClientSiteStripeService.GetSiteStripesAsync(ModuleState.ModuleId);
+            _SiteStripes = siteStripes.OrderByDescending(s => s.ModifiedOn).ToList();
             StateHasChanged();
         }
         catch (Exception ex)

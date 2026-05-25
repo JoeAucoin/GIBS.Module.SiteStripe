@@ -34,6 +34,13 @@
             <textarea id="apicredentials" class="form-control" rows="3" @bind="_settings.APICredentials"></textarea>
         </div>
     </div>
+
+    <div class="row mb-1 align-items-center">
+        <Label Class="col-sm-3" For="pagesize" HelpText="Number of items per page" ResourceKey="PageSize" ResourceType="@resourceType">Page Size:</Label>
+        <div class="col-sm-9">
+            <input id="pagesize" type="number" min="1" class="form-control" @bind="_settings.PageSize" />
+        </div>
+    </div>
 </div>
 
 @code {
@@ -51,6 +58,7 @@
             _settings.DefaultButtonText = SettingService.GetSetting(settings, nameof(SiteStripeSettings.DefaultButtonText), @"<i class=""bi bi-amazon""></i> View on Amazon");
             _settings.DefaultDisclosureStatement = SettingService.GetSetting(settings, nameof(SiteStripeSettings.DefaultDisclosureStatement), "This site is a participant in the Amazon Services LLC Associates Program, an affiliate advertising program designed to provide a means for sites to earn advertising fees by advertising and linking to amazon.com.");
             _settings.APICredentials = SettingService.GetSetting(settings, nameof(SiteStripeSettings.APICredentials), "");
+            _settings.PageSize = SettingService.GetSetting(settings, nameof(SiteStripeSettings.PageSize), "8");
         }
         catch (Exception ex)
         {
@@ -67,6 +75,7 @@
             settings = SettingService.SetSetting(settings, nameof(SiteStripeSettings.DefaultButtonText), _settings.DefaultButtonText);
             settings = SettingService.SetSetting(settings, nameof(SiteStripeSettings.DefaultDisclosureStatement), _settings.DefaultDisclosureStatement);
             settings = SettingService.SetSetting(settings, nameof(SiteStripeSettings.APICredentials), _settings.APICredentials);
+            settings = SettingService.SetSetting(settings, nameof(SiteStripeSettings.PageSize), string.IsNullOrWhiteSpace(_settings.PageSize) ? "8" : _settings.PageSize);
             await SettingService.UpdateModuleSettingsAsync(settings, ModuleState.ModuleId);
         }
         catch (Exception ex)
